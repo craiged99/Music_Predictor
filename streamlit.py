@@ -41,6 +41,7 @@ if a1 and al1 and a2 and al2:
     st.write('')
     st.write('Getting Album Information...')
     html = driver.page_source
+    st.write(len(html))
     descriptors_1 = (html.split('release_pri_descriptors">')[1]).split('</span')[0].split(',  ')
     html = html.split()
 
