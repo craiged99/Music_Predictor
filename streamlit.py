@@ -1,17 +1,19 @@
-import streamlit as st
-import os, sys
-
-@st.experimental_singleton
-def installff():
-  os.system('sbase install geckodriver')
-  os.system('ln -s /home/appuser/venv/lib/python3.7/site-packages/seleniumbase/drivers/geckodriver /home/appuser/venv/bin/geckodriver')
-
-_ = installff()
+from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.service import Service
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+from webdriver_manager.firefox import GeckoDriverManager
 
 import requests
 import random
-from selenium import webdriver
-from selenium.webdriver import FirefoxOptions
+
+
+firefoxOptions = Options()
+firefoxOptions.add_argument("--headless")
+service = Service(GeckoDriverManager().install())
 
 
 opts = FirefoxOptions()
@@ -32,16 +34,15 @@ if a1 and al1 and a2 and al2:
         
     st.write('')
     st.write('Checking Albums...')
-    driver = webdriver.Firefox(options=opts)
+    driver = webdriver.Firefox(options=firefoxOptions,service=service)
     driver.get("https://rateyourmusic.com/release/album/"+artist+"/"+album+'/')
-    driver2 = webdriver.Firefox(options=opts)
+    driver = webdriver.Firefox(options=firefoxOptions,service=service)
     driver2.get("https://rateyourmusic.com/release/album/"+artist2+"/"+album2+'/')
 
 
     st.write('')
     st.write('Getting Album Information...')
     html = driver.page_source
-    st.write(len(html))
     descriptors_1 = (html.split('release_pri_descriptors">')[1]).split('</span')[0].split(',  ')
     html = html.split()
 
@@ -135,7 +136,7 @@ if a1 and al1 and a2 and al2:
 
     st.write('')
     st.write('Predicting New Album...')
-    driver = webdriver.Firefox(options=opts)
+    driver = webdriver.Firefox(options=firefoxOptions,service=service)
     driver.get(url)
     html_genre = driver.page_source
     html_genre = html_genre.split()
@@ -178,7 +179,7 @@ if a1 and al1 and a2 and al2:
 
         st.write('')
         st.write('Predicting New Album...')
-        driver = webdriver.Firefox(options=opts)
+        driver = webdriver.Firefox(options=firefoxOptions,service=service)
         driver.get(url)
         html_genre = driver.page_source
         html_genre = html_genre.split()
