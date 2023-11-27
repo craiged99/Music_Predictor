@@ -2,7 +2,11 @@ import streamlit as st
 import requests
 import random
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
+from selenium.webdriver import FirefoxOptions
+
+
+opts = FirefoxOptions()
+opts.add_argument("--headless")
 
 st.markdown('MUSIC PREDICTOR')
 
@@ -10,9 +14,6 @@ a1 = st.text_input('Artist 1')
 al1 = st.text_input('Album 1')
 a2 = st.text_input('Artist 2')
 al2 = st.text_input('Album 2')
-
-chrome_options = Options()
-chrome_options.add_argument("--headless")
 
 if a1 and al1 and a2 and al2:
     artist = a1.replace(' ','-')
@@ -22,9 +23,9 @@ if a1 and al1 and a2 and al2:
         
     st.write('')
     st.write('Checking Albums...')
-    driver = webdriver.Chrome(options=chrome_options)
+    driver = webdriver.Firefox(options=opts)
     driver.get("https://rateyourmusic.com/release/album/"+artist+"/"+album+'/')
-    driver2 = webdriver.Chrome(options=chrome_options)
+    driver2 = webdriver.Firefox(options=opts)
     driver2.get("https://rateyourmusic.com/release/album/"+artist2+"/"+album2+'/')
 
 
@@ -120,16 +121,11 @@ if a1 and al1 and a2 and al2:
                 url = url + final_desciptors[i][j] + '%2d'
                 
 
-    '''            
-    random_no_1 = random.randrange(1, 3)
-    if random_no_1 == 1:
-        url = url + '/2'
 
-    '''
 
-    st.writerint('')
+    st.write('')
     st.write('Predicting New Album...')
-    driver = webdriver.Chrome(options=chrome_options)
+    driver = webdriver.Firefox(options=opts)
     driver.get(url)
     html_genre = driver.page_source
     html_genre = html_genre.split()
@@ -168,16 +164,11 @@ if a1 and al1 and a2 and al2:
                     url = url + final_desciptors[i][j] + '%2d'
                     
 
-        '''            
-        random_no_1 = random.randrange(1, 3)
-        if random_no_1 == 1:
-            url = url + '/2'
-
-        '''
+       
 
         st.write('')
         st.write('Predicting New Album...')
-        driver = webdriver.Chrome(options=chrome_options)
+        driver = webdriver.Firefox(options=opts)
         driver.get(url)
         html_genre = driver.page_source
         html_genre = html_genre.split()
@@ -201,7 +192,7 @@ if a1 and al1 and a2 and al2:
     rec_album_space = rec_album.replace('-',' ')
 
 
-    driver_recommend = webdriver.Chrome(options=chrome_options)
+    driver_recommend = webdriver.Firefox(options=opts)
     driver_recommend.get("https://rateyourmusic.com/release/album/"+rec_artist+"/"+rec_album+'/')
 
 
