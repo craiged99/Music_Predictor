@@ -1,20 +1,21 @@
 import streamlit as st
+import os, sys
 
+@st.cache_resource
+def installff():
+  os.system('sbase install geckodriver')
+  os.system('ln -s /home/appuser/venv/lib/python3.7/site-packages/seleniumbase/drivers/geckodriver /home/appuser/venv/bin/geckodriver')
+
+_ = installff()
+
+import requests
+import random
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver import FirefoxOptions
 
-@st.experimental_singleton
-def get_driver():
-    return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
-options = Options()
-options.add_argument('--disable-gpu')
-options.add_argument('--headless')
-
-driver = get_driver()
-
+opts = FirefoxOptions()
+opts.add_argument("--headless")
 
 st.markdown('MUSIC PREDICTOR')
 
@@ -31,9 +32,9 @@ if a1 and al1 and a2 and al2:
         
     st.write('')
     st.write('Checking Albums...')
-    driver = get_driver()
+    driver = webdriver.Firefox(options=opts)
     driver.get("https://rateyourmusic.com/release/album/"+artist+"/"+album+'/')
-    driver2 = get_driver()
+    driver2 = webdriver.Firefox(options=opts)
     driver2.get("https://rateyourmusic.com/release/album/"+artist2+"/"+album2+'/')
 
 
@@ -133,7 +134,7 @@ if a1 and al1 and a2 and al2:
 
     st.write('')
     st.write('Predicting New Album...')
-    driver = webdriver.Firefox(options=firefoxOptions,service=service)
+    driver = webdriver.Firefox(options=opts)
     driver.get(url)
     html_genre = driver.page_source
     html_genre = html_genre.split()
@@ -176,7 +177,7 @@ if a1 and al1 and a2 and al2:
 
         st.write('')
         st.write('Predicting New Album...')
-        driver = webdriver.Firefox(options=firefoxOptions,service=service)
+        driver = webdriver.Firefox(options=opts)
         driver.get(url)
         html_genre = driver.page_source
         html_genre = html_genre.split()
