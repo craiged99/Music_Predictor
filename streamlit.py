@@ -12,9 +12,6 @@ import requests
 import random
 from streamlit_LAST_Back import get_album_tags, get_album_info, album_with_tag
 
-opts = FirefoxOptions()
-opts.add_argument("--headless")
-
 # Define the titles
 # Define the titles
 title = (f"<div style='text-align: center; font-size: 66px; color: #F5F5F5; font-weight: bold;'>SoundSurfer</div>")
