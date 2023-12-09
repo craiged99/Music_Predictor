@@ -12,291 +12,319 @@ import requests
 import random
 from selenium import webdriver
 from selenium.webdriver import FirefoxOptions
-
+import pandas as pd
+from streamlit_LAST_Back import get_album_tags, get_album_info, album_with_tag
 
 opts = FirefoxOptions()
 opts.add_argument("--headless")
 
-st.markdown('MUSIC PREDICTOR')
+# Define the titles
+# Define the titles
+title = (f"<div style='text-align: center; font-size: 66px; color: #F5F5F5; font-weight: bold;'>SoundSurfer</div>")
+sub_title = (f"<div style='text-align: center; font-size: 26px; color: #F5F5F5;'>Enter two albums and get a new recommendation!</div>")
 
-a1 = st.text_input('Artist 1')
-al1 = st.text_input('Album 1')
-a2 = st.text_input('Artist 2')
-al2 = st.text_input('Album 2')
+# Create a two-column layout
+col1, col2 = st.columns([3, 1])  # Adjust the width ratios as needed (1:2 in this example)
 
-if a1 and al1 and a2 and al2:
-    artist = a1.replace(' ','-')
-    album = al1.replace(' ','-')
-    artist2 = a2.replace(' ','-')
-    album2 = al2.replace(' ','-')
-        
+# Add the title and subtitle to the first column
+col1.markdown(title, unsafe_allow_html=True)
+
+# Add a smaller-sized image to the second column
+image_path = "SoundSurfer.png"  # Replace with the actual path to your PNG image
+col2.image(
+    image_path,
+    use_column_width=False,  # Disable column width adaptation
+    width=130,  # Adjust the image width as needed
+)
+
+# Add CSS to adjust the padding
+st.markdown(
+    "<style>"
+    ".stImage { padding-left: 80px; }"  # Adjust the left padding as needed
+    "</style>",
+    unsafe_allow_html=True
+)
+
+st.write('')
+st.markdown(sub_title, unsafe_allow_html=True)
+st.write('')
+
+
+
+
+a1 = (st.text_input('Artist 1')).lower()
+al1 = (st.text_input('Album 1')).lower()
+a2 = (st.text_input('Artist 2')).lower()
+al2 = (st.text_input('Album 2')).lower()
+
+progress_bar = st.progress(0)
+
+# Assuming you have different stages in your app, update the progress bar accordingly
+ 
+# Custom styled button with central alignment using HTML and CSS
+button_style = """
+    <style>
+        /* Container for the button to help in centering */
+        div.stButton {
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Style for the native Streamlit button */
+        div.stButton > button:first-child {
+            background-color: #f8f8f8;  /* Off-white background */
+            color: black;               /* Black text */
+            border: 1px solid black;    /* Black border */
+            border-radius: 4px;         /* Rounded corners */
+            padding: 10px 20px;         /* Bigger size */
+        }
+    </style>
+"""
+
+st.markdown(button_style, unsafe_allow_html=True)
+
+
+if 'current_message' not in st.session_state:
+    st.session_state.current_message = ''
+
+# Listen for custom button events
+if st.button('Reccomend!'):
+    
+    
+    text = st.empty()
+    
     st.write('')
-    st.write('Checking Albums...')
-    driver = webdriver.Firefox(options=opts)
-    driver.get("https://rateyourmusic.com/release/album/"+artist+"/"+album+'/')
-    driver2 = webdriver.Firefox(options=opts)
-    driver2.get("https://rateyourmusic.com/release/album/"+artist2+"/"+album2+'/')
+    text.write("Checking Albums...", value="", key="1")
+    
+    # Example usage
+    api_key = '5b06c4e904f307e09b5f7c3155d30212'  # Replace with your actual API key
+    
+    
+    # Fetch album tags
+    tag_list_1 = get_album_tags(a1, al1, api_key)
+    tag_list_2 = get_album_tags(a2, al2, api_key)
+    
+    album1 = get_album_info(a1, al1, api_key)
+    album2 = get_album_info(a2, al2, api_key)
+    
+    album1_image = album1['album']['image'][5]['#text']
+    
+    album2_image = album2['album']['image'][5]['#text']
+    
+    #col1, col2 = st.columns([3, 1])  # Adjust the width ratios as needed (1:2 in this example)
 
+    # Add the title and subtitle to the first column
+    #col1.image(
+      #  album1_image,
+     #   use_column_width=False,  # Disable column width adaptation
+     #   width=200,)  # Adjust the image width as needed
+    # Add a smaller-sized image to the second column
+    #col2.image(
+     #   album2_image,
+     #   use_column_width=False,  # Disable column width adaptation
+     #   width=200,  # Adjust the image width as needed
+   # )
 
-    st.write('')
-    st.write('Getting Album Information...')
-    html = driver.page_source
-    st.write(html)
-    descriptors_1 = (html.split('release_pri_descriptors">')[1]).split('</span')[0].split(',  ')
-    html = html.split()
-
-    html2 = driver2.page_source
-    descriptors_2 = (html2.split('release_pri_descriptors">')[1]).split('</span')[0].split(',  ')
-    html2 = html2.split()
-
-    list1 = [ x for x in html if "genre/" in x ]
-    new_list = [s.replace('href="/genre/', "") for s in list1]
-    genres_1 = [s.split('/', 1)[0] for s in new_list]
-
-    genres_1 = [item for item in genres_1 if '=' not in item]
-
-    list12 = [ x for x in html2 if "genre/" in x ]
-    new_list2 = [s.replace('href="/genre/', "") for s in list12]
-    genres_2 = [s.split('/', 1)[0] for s in new_list2]
-
-    genres_2 = [item for item in genres_2 if '=' not in item]
-
-    #Look for common genres/descript. between albums
-    common_genres = [element for element in genres_1 if element in genres_2]
-    common_descriptors = [element for element in descriptors_2 if element in descriptors_1]
-
-
-    random_number = random.randint(1, 2)
-
+    
+    
+    #common_elements 
+    
+    common_elements = list(set(tag_list_1[0:40]).intersection(tag_list_2[0:40]))
+    
+    limit=250
+    page=1
+    
     try:
-        final_genres  = random.sample(common_genres, 1)
-
-        genre_version = 1  
-        
+        tag = common_elements[0]
     except:
-        if random_number == 1:
-            final_genres  = random.sample(genres_1, 1)
-            
-        else:
-            final_genres  = random.sample(genres_2, 1)
+        tag=tag_list_1[0]
+    
+    
+    albums_with_tag_name = album_with_tag(tag,limit,page)
 
-        genre_version = 2
+    
+    progress_bar.progress(20)
+    
+    matching_albums = []
+    
+    
+    text.write("Finding Similar Albums...", value="", key="2")
+
+    
+    for i in range(len(albums_with_tag_name['albums']['album'])):
         
+        artist = albums_with_tag_name['albums']['album'][i]['artist']['name']
+            
+        album_name = albums_with_tag_name['albums']['album'][i]['name']
+        
+        tag_list_rec = get_album_tags(artist, album_name, api_key)
+        
+        # Calculate the common elements between tag_list_rec and tag_list_1
+        common_elements_1 = list(set(tag_list_rec[0:60]).intersection(tag_list_1[0:60]))
+        
+        # Calculate the common elements between tag_list_rec and tag_list_2
+        common_elements_2 = list(set(tag_list_rec[0:60]).intersection(tag_list_2[0:60]))
+    
+        
+        # Check if both common_elements_1 and common_elements_2 have more than 3 common elements
+        if len(common_elements_1) >= 3 and len(common_elements_2) >= 3:
+            # Create a dictionary for the matching album
+            matching_album = {
+                'album_name': album_name,
+                'artist': artist,
+                'common_elements_1': common_elements_1,
+                'common_elements_2': common_elements_2
+            }
+            # Append the matching album dictionary to the list
+            matching_albums.append(matching_album)
+            
+    
+    progress_bar.progress(40)
+    
+    #st.write(matching_albums)
+    
+    
+    text.write("Matching Albums...", value="", key="3")
+    
+    while True:
+        
+        random_album = random.choice(matching_albums)
+        
+        rec_album_info = get_album_info(random_album['artist'], random_album['album_name'],api_key)
+    
+        rec_listeners = rec_album_info['album']['listeners']
+        
+        try:
+    
+            rec_length = len(rec_album_info['album']['tracks']['track'])
+            
+        except:
+            
+            rec_length = 0
+        
+        if int(rec_listeners) < 500000 and int(rec_length) > 7:
+            
+            FINAL_ALBUM = rec_album_info['album']['name']
+            FINAL_ARTIST = rec_album_info['album']['artist']
+            
+            common_1 = random_album['common_elements_1']
+            common_2 = random_album['common_elements_2']
+        
+            break
+    
+    
+    
+    rec_image = rec_album_info['album']['image'][5]['#text']
+    
+    #st.image(rec_image, use_column_width=False, width=130,)
+
+    
+    
+    progress_bar.progress(80)
+    
    
-            
-    if random_number == 1:
-        
-        try: 
-            
-            final_desciptors  = random.sample(descriptors_2,2)
-            
-        except:
-            final_desciptors = random.sample(descriptors_2+descriptors_2,2)
-
-    else:
-        try: 
-            
-            final_desciptors  = random.sample(descriptors_1,2)
-            
-        except:
-            final_desciptors = random.sample(descriptors_2+descriptors_2,2)
-
-
-
-    final_genres = [s.replace('-', " ") for s in final_genres]
-    final_genres = [s.split(' ') for s in final_genres]
-
-    final_desciptors = [s.replace('-', " ") for s in final_desciptors]
-    final_desciptors = [s.split(' ') for s in final_desciptors]
-
-
-    url = 'https://rateyourmusic.com/charts/diverse/album/all-time/ge:exact,'
-
-    for i in range(len(final_genres)):
-        for j in range(len(final_genres[i])):
-            genre_words = len(final_genres[i])
-            if j == genre_words-1:
-                url = url + final_genres[i][j] + ','
-            else:
-                url = url + final_genres[i][j] + '%2d'
-                
-    url = url + '/d:all,'
-                
-    for i in range(len(final_desciptors)):
-        for j in range(len(final_desciptors[i])):
-            genre_words = len(final_desciptors[i])
-            if j == genre_words-1:
-                url = url + final_desciptors[i][j] + ','
-            else:
-                url = url + final_desciptors[i][j] + '%2d'
-                
-
-
-
+    text.write("", value="", key="4")
+    
     st.write('')
-    st.write('Predicting New Album...')
-    driver = webdriver.Firefox(options=opts)
-    driver.get(url)
-    html_genre = driver.page_source
-    html_genre = html_genre.split()
-
-    list3 = [ x for x in html_genre if 'release/album/' in x ]
-    list3 = list(set(list3))
-    albums = list(dict.fromkeys(list3))
-    no_shite = [s.replace('href="/release/album/', "") for s in albums]
-    no_shite = [s.replace('/">', "") for s in no_shite]
-
-    filtered_list = [item for item in no_shite if artist not in item]
-    filtered_list = [item for item in filtered_list if artist2 not in item]
-
-    try:
-        random_no = random.randrange(1, len(filtered_list), 1)
-        
-    except:
-        url = 'https://rateyourmusic.com/charts/diverse/album/all-time/ge:exact,'
-
-        for i in range(len(final_genres)):
-            for j in range(len(final_genres[i])):
-                genre_words = len(final_genres[i])
-                if j == genre_words-1:
-                    url = url + final_genres[i][j] + ','
-                else:
-                    url = url + final_genres[i][j] + '%2d'
-                    
-        url = url + '/d:'
-                    
-        for i in range(len(final_desciptors)):
-            for j in range(len(final_desciptors[i])):
-                genre_words = len(final_desciptors[i])
-                if j == genre_words-1:
-                    url = url + final_desciptors[i][j] + ','
-                else:
-                    url = url + final_desciptors[i][j] + '%2d'
-                    
-
-       
-
-        st.write('')
-        st.write('Predicting New Album...')
-        driver = webdriver.Firefox(options=opts)
-        driver.get(url)
-        html_genre = driver.page_source
-        html_genre = html_genre.split()
-
-        list3 = [ x for x in html_genre if 'release/album/' in x ]
-        list3 = list(set(list3))
-        albums = list(dict.fromkeys(list3))
-        no_shite = [s.replace('href="/release/album/', "") for s in albums]
-        no_shite = [s.replace('/">', "") for s in no_shite]
-
-        filtered_list = [item for item in no_shite if artist not in item]
-        filtered_list = [item for item in filtered_list if artist2 not in item]
-        
-        random_no = random.randrange(1, len(filtered_list), 1)
-        
-
-    reccomendation = filtered_list[random_no]
-    rec_artist = reccomendation.split('/',1)[0]
-    rec_artist_space = rec_artist.replace('-',' ')
-    rec_album = reccomendation.split('/',1)[1]
-    rec_album_space = rec_album.replace('-',' ')
-
-
-    driver_recommend = webdriver.Firefox(options=opts)
-    driver_recommend.get("https://rateyourmusic.com/release/album/"+rec_artist+"/"+rec_album+'/')
-
-
-    html_recommend = driver_recommend.page_source
-    descriptors_reccomend = (html_recommend.split('release_pri_descriptors">')[1]).split('</span')[0].split(',  ')
-    html_recommend = html_recommend.split()
-
-    list_reccomend = [ x for x in html_recommend if "genre/" in x ]
-    list_reccomend = [s.replace('href="/genre/', "") for s in list_reccomend]
-    list_reccomend = [s.split('/', 1)[0] for s in list_reccomend]
-
-
+    recommendation_text = f"<div style='text-align: center; font-size: 30px;'>Your Recommendation is:</div>"
+    recommendation_text_2 = f"<div style='text-align: center; font-size: 32px;'><strong>{FINAL_ALBUM}</strong> by <em>{FINAL_ARTIST}</em>.</div>"
+    
+    
+    st.markdown(recommendation_text, unsafe_allow_html=True)
+    st.markdown(recommendation_text_2, unsafe_allow_html=True)
     st.write('')
-    st.write('Getting New Album Information...')
-
-    common_genres_1 = [element for element in list_reccomend if element in genres_1]
-    common_descriptors_1 = [element for element in descriptors_reccomend if element in descriptors_1]
 
 
+    import matplotlib.pyplot as plt
 
-    common_genres_2 = [element for element in list_reccomend if element in genres_2]
-    common_descriptors_2 = [element for element in descriptors_reccomend if element in descriptors_2]
+    # Assuming common_genres_1, common_genres_2, common_descriptors_1, and common_descriptors_2 are your lists
+    # Calculate the number of common elements for each album
 
-    common_descriptors_both = [element for element in descriptors_reccomend if element in common_descriptors]
-    common_genres_both = [element for element in list_reccomend if element in common_genres]
+    
+    # Labels for the pie chart
+    labels = [al1.title(), al2.title()]
+    
+    # Values for each section of the pie chart
+    sizes = [len(common_1), len(common_2)]
+    
+    # Colors for each section
+    colors = ['#ece8d9','#8cb0c5']
+    
+    # Plotting the pie chart
+    fig1, ax1 = plt.subplots()
+    _, texts, _ = ax1.pie(sizes, colors=colors, labels=labels, autopct='%1.1f%%', startangle=90, textprops={'color': 'black'})
+    
+    # Set the text color for each label individually
+    texts[0].set_color(colors[0])   # Set the text color for the first label to red
+    texts[1].set_color(colors[1])  # Set the text color for the second label to blue
+    
+    
+    
 
+    
+    # Draw circle for a Donut chart
 
-    common_genres_1 = list(set(common_genres_1))
-    common_genres_2 = list(set(common_genres_2))
-
-    Reccomend = 'I reccomend ' + rec_album_space+' by '+rec_artist_space + '.'
-
-
-    #genre_recoomned
-    if len(common_genres_both) != 0:
-        
-        genre_string = 'This album has genres of ' + ' and '.join(common_genres_both) + ' that are also present in both original albums.'
-
-    if len(common_genres_both) == 0 and len(common_genres_1) != 0 and len(common_genres_2) !=0:
-        
-        genre_string = 'This album is ' + common_genres_1[0] +', similar to ' + album +\
-            ', whilst also having elements of ' + common_genres_2[0] + ', like ' + album2 + '.'
-            
-    else:
-        if random_number == 1:
-            genre_string = 'This album has genres of ' + ' and '.join(common_genres_1) +\
-                ' that are also present in ' +album + '.'
-                
-        if random_number == 2:
-            genre_string = 'This album has genres of ' + ' and '.join(common_genres_2)+\
-                ' that are also present in ' +album2 + '.'
-
-
-
-    descript_string = ''
-
-    #descriptors
-    if len(common_descriptors_both) != 0:
-        
-        if len(common_descriptors_both) == 1:
-            
-            if random_number == 1:
-        
-                descript_string = 'Similar to both original albums, this suggested album is described as ' + \
-                    common_descriptors_both[0] + ', whilst also being described as ' + \
-                        common_descriptors_2[0] + ', similar to ' + album2 + '.'
-                        
-            if random_number == 2:
-        
-                descript_string = 'Similar to both original albums, this suggested album is described as ' + \
-                    common_descriptors_both[0] + ', whilst also being described as ' + \
-                        common_descriptors_1[0] + ', similar to ' + album + '.'
-                        
-        if len(common_descriptors_both) >= 2:
-            
-            descript_string = 'Similar to both original albums, this suggested album is described as ' + \
-                ' and '.join(common_descriptors_both[0:2]) + '.'
-                
-    if len(common_descriptors_both) == 0:
-        
-        if random_number == 1:
-
-            descript_string = 'Similar to ' + album2 + ', this suggested album is described as ' + \
-                ' and '.join(common_descriptors_2[0:2]) + '.'
-                    
-        if random_number == 2:
-
-            descript_string = 'Similar to ' + album + ', this suggested album is described as ' + \
-                ' and '.join(common_descriptors_1[0:2]) + '.'
-                
-          
-    Reccomend = Reccomend + ' ' + genre_string + ' ' + descript_string
-    Reccomend = Reccomend.replace('-',' ')
-
+    # Equal aspect ratio ensures that pie is drawn as a circle
+    
+    plt.tight_layout()
+    fig1.patch.set_facecolor('none') # Set figure background to transparent
+    fig1.patch.set_alpha(0) # Set transparency level
+    ax1.patch.set_facecolor('none') # Set axes background to transparent
+    
     st.write('')
-    st.write(Reccomend)
-    st.write(' ')
+    pie_title = f"<h3 style='font-size: 38px; text-align: center;'>Album Similarity</h3>"
+
+    st.markdown(pie_title, unsafe_allow_html=True)
+    st.write(
+        '<style>div.Widget.row-widget.stRadio {justify-content: center;}' 
+        'div.row-widget.stRadio div {margin-left: 50px;}</style>',
+        unsafe_allow_html=True
+        )
+
+    # Show the plot
+    st.pyplot(fig1)
+    
+    
+    color_genre_1 = "#ece8d9"
+    color_descriptor_1 = "#f7f5ee"  
+    
+    color_genre_2 = "#8cb0c5"
+    color_descriptor_2 = "#c2d5e0"  
+
+    
+    html_content_1 = "<ul>"
+
+    # Add all genres
+    for tag in common_1:
+        html_content_1 += f"<li style='color: {color_descriptor_1};'><b>{tag.title()}</b></li>"
+
+    # Close the unordered list
+    html_content_1 += "</ul>"
+    
+    
+    html_content_2 = "<ul>"
+
+    # Add all genres
+    for tag in common_2:
+        html_content_2 += f"<li style='color: {color_descriptor_2};'><b>{tag.title()}</b></li>"
+
+    # Close the unordered list
+    html_content_2 += "</ul>"
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        markdown_text = f"<h3 style='font-size: 24px; text-align: center; color: color_genre_1;'>{al1.title()}</h3>"
+        st.markdown(markdown_text, unsafe_allow_html=True)
+        st.markdown(html_content_1, unsafe_allow_html=True)
+    
+    with col2:
+        markdown_text = f"<h3 style='font-size: 24px; text-align: center; color: color_genre_2;'>{al2.title()}</h3>"
+
+        st.markdown(markdown_text, unsafe_allow_html=True)
+        st.markdown(html_content_2, unsafe_allow_html=True)
+
+    
+    progress_bar.progress(100)
+
+    
