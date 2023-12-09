@@ -1,5 +1,3 @@
 streamlit==1.28.2
-requests
-random
-re
-pandas
+requests==2.26.0
+pandas==1.2.3
