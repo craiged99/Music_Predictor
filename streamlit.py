@@ -10,9 +10,6 @@ _ = installff()
 
 import requests
 import random
-from selenium import webdriver
-from selenium.webdriver import FirefoxOptions
-import pandas as pd
 from streamlit_LAST_Back import get_album_tags, get_album_info, album_with_tag
 
 opts = FirefoxOptions()
